@@ -19,19 +19,19 @@
 ;;(add-to-list 'default-frame-alist '(foreground-color . "white"))
 ;; ごとの色
 ;;(add-hook 'font-lock-mode-hook
-  ;;'(lambda ()
-	;;(set-face-foreground 'font-lock-comment-face "lightgreen")
-    ;;(set-face-foreground 'font-lock-string-face "LightSalmon")
-    ;;(set-face-foreground 'font-lock-keyword-face "Cyan1")
-   ;; (set-face-foreground 'font-lock-keyword-face "green2")  ; 微調整
-    ;;(set-face-foreground 'font-lock-builtin-face "LightSteelBlue")
-    ;;(set-face-foreground 'font-lock-function-name-face "LightSkyBlue")
-    ;;(set-face-foreground 'font-lock-variable-name-face "Pink")
-    ;;(set-face-foreground 'font-lock-type-face "green2")
-    ;;(set-face-foreground 'font-lock-constant-face "red")
-    ;;(set-face-foreground 'font-lock-warning-face "Pink")
-  ;;)
- ;; )
+;;'(lambda ()
+;;(set-face-foreground 'font-lock-comment-face "lightgreen")
+;;(set-face-foreground 'font-lock-string-face "LightSalmon")
+;;(set-face-foreground 'font-lock-keyword-face "Cyan1")
+;; (set-face-foreground 'font-lock-keyword-face "green2")  ; 微調整
+;;(set-face-foreground 'font-lock-builtin-face "LightSteelBlue")
+;;(set-face-foreground 'font-lock-function-name-face "LightSkyBlue")
+;;(set-face-foreground 'font-lock-variable-name-face "Pink")
+;;(set-face-foreground 'font-lock-type-face "green2")
+;;(set-face-foreground 'font-lock-constant-face "red")
+;;(set-face-foreground 'font-lock-warning-face "Pink")
+;;)
+;; )
 (add-to-list 'custom-theme-load-path "~/.emacs.d/atom-one-dark-theme/")
 (load-theme 'atom-one-dark t)
 
@@ -47,10 +47,24 @@
 (global-linum-mode 1)
 
 ;; tabサイズ
-(setq tab-width 4)
+;;(setq tab-width 4)
+;; タブにスペースを使用する
+(setq-default tab-width 4 indent-tabs-mode nil)
 
-(setq c-auto-newline nil)
-(setq c-tab-always-indent t)
+(setq c-basic-offset 4)
+(setq c-argdecl-indent 0)       ; 関数の引数行のインデント
+                                ; 但し引数行で明示的にタブを押さない
+                                ; 場合は、インデントしない
+(setq c-auto-newline nil)             ; 自動改行
+(c-set-offset 'substatement-open 0) ; { を書く時のインデント
+(c-set-offset 'inline-open 0)
+(c-set-offset 'c-indent-level 4)               ; { を書いた後のインデント
+(setq c-label-offset 0)              ; ラベルの深さ
+(setq c-tab-always-indent t)          ; タブ記号を押した時にユーザーが
+                                      ; 任意にタブ記号を入れることは不可
+
+; スペース、タブなどを可視化する
+(global-whitespace-mode 1)
 
 ;;; *.~ とかのバックアップファイルを作らない
 (setq make-backup-files nil)
@@ -68,6 +82,8 @@
 
 ;;選択行をハイライト
 (transient-mark-mode t)
+
+(setq ac-use-fuzzy t)
 
 ;; 対応する括弧を光らせる
 (show-paren-mode 1)
@@ -90,6 +106,12 @@
  '(hl-line ((t (:background "MediumBlue"))))
  '(transient ((t (:background "red")))))
 
+;;; mozc
+(require 'mozc)                                 ; mozcの読み込み
+(set-language-environment "Japanese")           ; 言語環境を"japanese"に
+(setq default-input-method "japanese-mozc")     ; IMEをjapanes-mozcに
+(prefer-coding-system 'utf-8)                   ; デフォルトの文字コードをUTF-8に
+(global-set-key [zenkaku-hankaku] 'mozc-mode)
 ;;
 ;; Auto Complete
 ;;
@@ -107,16 +129,16 @@
 ;;補完
 
 (add-hook 'c-mode-hook
-	  (lambda ()
-	    (require 'auto-complete)))
+          (lambda ()
+            (require 'auto-complete)))
 
 (add-hook 'c++-mode-hook
-	  (lambda ()
-	    (require 'auto-complete)))
+          (lambda ()
+            (require 'auto-complete)))
 
 (add-hook 'java-mode-hook
-	  (lambda ()
-	    (require 'auto-complete)))
+          (lambda ()
+            (require 'auto-complete)))
 
 ;(add-hook 'js2-mode-hook
 ;          '(lambda ()
@@ -203,29 +225,27 @@
 	  (lambda ()
 (require 'ajc-java-complete-config)
 (setq company-idle-delay 0) ; デフォルトは0.5
-(setq company-minimum-prefix-length 3) ; デフォルトは4
+(setq company-minimum-prefix-length 4) ; デフォルトは4
 (setq company-selection-wrap-around t))) ; 候補の一番下でさらに下に行こうとすると一番上に戻る
 
 (add-hook 'c-mode-hook
 	  (lambda ()
 (require 'company)
 (setq company-idle-delay 0) ; デフォルトは0.5
-(setq company-minimum-prefix-length 3) ; デフォルトは4
+(setq company-minimum-prefix-length 4) ; デフォルトは4
 (setq company-selection-wrap-around t))) ; 候補の一番下でさらに下に行こうとすると一番上に戻る
 
 (add-hook 'c++-mode-hook
 	  (lambda ()
 (require 'company)
 (setq company-idle-delay 0) ; デフォルトは0.5
-(setq company-minimum-prefix-length 3) ; デフォルトは4
+(setq company-minimum-prefix-length 4) ; デフォルトは4
 (setq company-selection-wrap-around t))) ; 候補の一番下でさらに下に行こうとすると一番上に戻る
 
 
 (require 'epc)
 (require 'auto-complete-config)
 (require 'python)
-;;;;; PYTHONPATH上のソースコードがauto-completeの補完対象になる ;;;;;
-(setenv "PYTHONPATH" "/home/junjun/.pyenv/versions/3.6.0/lib/python3.6/site-packages")
 (require 'jedi)
 (add-hook 'python-mode-hook 'jedi:setup)
 (setq jedi:complete-on-dot t)
@@ -290,8 +310,11 @@
 (require 'company)
 (global-company-mode) ; 全バッファで有効にする
 (setq company-idle-delay 0) ; デフォルトは0.5
-(setq company-minimum-prefix-length 2) ; デフォルトは4
+(setq company-minimum-prefix-length 4) ; デフォルトは4
 (setq company-selection-wrap-around t) ; 候補の一番下でさらに下に行こうとすると一番上に戻る
+
+(add-hook 'c-mode-hook '(lambda () (setq tab-width 4)))
+(add-hook 'c++-mode-hook '(lambda () (setq tab-width 4)))
 
 ;; メニューバーを消す
 (menu-bar-mode -1)
@@ -340,4 +363,4 @@
  ;; If there is more than one, they won't work right.
  '(package-selected-packages
    (quote
-    (rainbow-delimiters company-tern golden-ratio-scroll-screen javap-mode yasnippet-snippets auto-auto-indent java-imports tern-auto-complete tern auto-complete-c-headers js2-mode add-node-modules-path js-auto-format-mode flycheck-pos-tip package-utils ace-isearch yasnippet python-mode neotree jedi golden-ratio company auto-highlight-symbol atom-one-dark-theme))))
+    (fuzzy ## company-c-headers ctags-update jedi-direx mozc rainbow-delimiters company-tern golden-ratio-scroll-screen javap-mode yasnippet-snippets auto-auto-indent java-imports tern-auto-complete tern auto-complete-c-headers js2-mode add-node-modules-path js-auto-format-mode flycheck-pos-tip package-utils ace-isearch yasnippet python-mode neotree jedi golden-ratio company auto-highlight-symbol atom-one-dark-theme))))
