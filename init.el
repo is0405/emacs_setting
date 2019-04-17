@@ -64,7 +64,7 @@
                                       ; 任意にタブ記号を入れることは不可
 
 ; スペース、タブなどを可視化する
-(global-whitespace-mode 1)
+;(global-whitespace-mode 1)
 
 ;;; *.~ とかのバックアップファイルを作らない
 (setq make-backup-files nil)
