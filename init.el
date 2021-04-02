@@ -1,3 +1,4 @@
+;;; init.el --- 
 ;; Added by Package.el.  This must come before configurations of
 ;; installed packages.  Don't delete this line.  If you don't want it,
 ;; just comment it out by adding a semicolon to the start of the line.
@@ -15,6 +16,19 @@
 ;;M-x package-refresh-contents
 
 (package-initialize)
+;; メニューバーを消す
+(menu-bar-mode -1)
+
+;; ツールバーを消す
+(tool-bar-mode -1)
+
+;; "yes or no" の選択を "y or n" にする
+(fset 'yes-or-no-p 'y-or-n-p)
+
+;;UTF-8
+(prefer-coding-system 'utf-8-unix)
+(setq coding-system-for-read 'utf-8)
+(setq coding-system-for-write 'utf-8)
 ;;(set-face-background 'default "gray20")
 ;;(add-to-list 'default-frame-alist '(foreground-color . "white"))
 ;; ごとの色
@@ -120,37 +134,11 @@
  ;; custom-set-variables was added by Custom.
  ;; If you edit it by hand, you could mess it up, so be careful.
  ;; Your init file should contain only one such instance.
- ;; If there is more than one, they won't work right.
+;; If there is more than one, they won't work right.
  ;;'(ahs-default-range (quote ahs-range-whole-buffer))
  ;;'(package-selected-packages
  ;;  (quote
 ;;	(golden-ratio company-irony-c-headers company-irony ctags-update helm-gtags highlight-symbol python-mode js2-mode neotree auto-complete))))
-
-;;補完
-
-(add-hook 'c-mode-hook
-          (lambda ()
-            (require 'auto-complete)))
-
-(add-hook 'c++-mode-hook
-          (lambda ()
-            (require 'auto-complete)))
-
-(add-hook 'java-mode-hook
-          (lambda ()
-            (require 'auto-complete)))
-
-;(add-hook 'js2-mode-hook
-;          '(lambda ()
-;             (when (locate-library "tern")
-;               (setq tern-command '("tern" "--no-port-file")) ;; .term-port を作らない
-;               (tern-mode t)
-;               (eval-after-load 'tern
-;                 '(progn
-;                    (require 'tern-auto-complete)
-;                    (tern-ac-setup)))
-;               )
-;             ))
 
 ;;treeを表示
 (require 'neotree)
@@ -179,84 +167,26 @@
 ;;(setq-default show-trailing-whitespace t)
 ;;(set-face-background 'trailing-whitespace "#b14770")
 
-
-;;括弧2個
-(add-hook 'c-mode-common-hook
-          (lambda ()
-         ;;(define-key c-mode-base-map "\"" 'electric-pair)
-         ;;(define-key c-mode-base-map "\'" 'electric-pair)
-         (define-key c-mode-base-map "(" 'electric-pair)
-         (define-key c-mode-base-map "[" 'electric-pair)
-		 (define-key c-mode-base-map "" 'electric-pair)
-         (define-key c-mode-base-map "{" 'electric-pair)))
-
-(add-hook 'java-mode-common-hook
-          (lambda ()
-         ;;(define-key c-mode-base-map "\"" 'electric-pair)
-         ;;(define-key c-mode-base-map "\'" 'electric-pair)
-         (define-key java-mode-base-map "(" 'electric-pair)
-         (define-key java-mode-base-map "[" 'electric-pair)
-		 (define-key java-mode-base-map "" 'electric-pair)
-         (define-key java-mode-base-map "{" 'electric-pair)))
-
-;;括弧2個
-(add-hook 'python-mode-hook
-          (lambda ()
-            (define-key python-mode-map "\"" 'electric-pair)
-            (define-key python-mode-map "\'" 'electric-pair)
-            (define-key python-mode-map "(" 'electric-pair)
-            (define-key python-mode-map "[" 'electric-pair)
-            (define-key python-mode-map "{" 'electric-pair)))
-
 (defun electric-pair ()
   "Insert character pair without sournding spaces"
   (interactive)
   (let (parens-require-spaces)
     (insert-pair)))
 
-;;pythonの時の色指定
-;;(require 'python-mode)
-;;(set-face-foreground 'py-variable-name-face "red")
-;;(set-face-foreground 'py-import-from-face "pink1")
-;;(set-face-foreground 'py-builtins-face "maroon2")
 
-;; auto-java-complete
-(add-hook  'java-mode-hook 'ajc-java-complete-mode
-	  (lambda ()
-(require 'ajc-java-complete-config)
-(setq company-idle-delay 0) ; デフォルトは0.5
-(setq company-minimum-prefix-length 4) ; デフォルトは4
-(setq company-selection-wrap-around t))) ; 候補の一番下でさらに下に行こうとすると一番上に戻る
-
-(add-hook 'c-mode-hook
-	  (lambda ()
+;;ALL
 (require 'company)
+(global-company-mode) ; 全バッファで有効にする
+(setq company-transformers '(company-sort-by-backend-importance)) ;; ソート順
 (setq company-idle-delay 0) ; デフォルトは0.5
-(setq company-minimum-prefix-length 4) ; デフォルトは4
-(setq company-selection-wrap-around t))) ; 候補の一番下でさらに下に行こうとすると一番上に戻る
-
-(add-hook 'c++-mode-hook
-	  (lambda ()
-(require 'company)
-(setq company-idle-delay 0) ; デフォルトは0.5
-(setq company-minimum-prefix-length 4) ; デフォルトは4
-(setq company-selection-wrap-around t))) ; 候補の一番下でさらに下に行こうとすると一番上に戻る
-
-
-(require 'epc)
-(require 'auto-complete-config)
-(require 'python)
-(require 'jedi)
-(add-hook 'python-mode-hook 'jedi:setup)
-(setq jedi:complete-on-dot t)
-
-
-;(add-hook 'js-mode-hook #'js-auto-format-mode)
-;(add-hook 'js-mode-hook #'add-node-modules-path)
+(setq company-minimum-prefix-length 3) ; デフォルトは4
+(setq company-selection-wrap-around t) ; 候補の一番下でさらに下に行こうとすると一番上に戻る
+(setq completion-ignore-case t)
+(setq company-dabbrev-downcase nil)
 
 ;;全検索のショートカットキー 設定
 
-(setq tags-table-list '("~/.emacs.d/soccer_tag"))
+;;(setq tags-table-list '("~/.emacs.d/soccer_tag"))
 ;;定義ジャンプのショートカットキー
 
 (define-key global-map "\C-a" 'isearch-forward)
@@ -265,9 +195,6 @@
 ;;(global-ace-isearch-mode +1)
 ;;(setq ace-isearch-use-function-from-isearch nil)
 ;;(define-key isearch-mode-map (kbd "\C-a") 'helm-multi-swoop-all-from-isearch)
-
-(define-key global-map "\C-l" 'goto-line)
-(define-key global-map "\C-r" 'query-replace )
 
 ;; ファイル内検索（いらないメッセージは消去）
 (define-key global-map (kbd "C-f") 'rgrep)
@@ -283,8 +210,11 @@
 ;; rgrep時などに，新規にwindowを立ち上げる
 (setq special-display-buffer-names '("*Help*" "*compilation*" "*interpretation*" "*grep*" ))
 
-(define-key global-map "\C-w" 'xref-find-definitions)
-(define-key global-map "\C-e" 'pop-tag-mark)
+(setq dumb-jump-mode t)
+(setq dumb-jump-selector 'ivy)
+(setq dumb-jump-use-visible-window nil)
+(define-key global-map "\C-w" 'dumb-jump-go)
+(define-key global-map "\C-e" 'dumb-jump-back)
 (define-key global-map "\C-s" 'save-buffer)
 (define-key global-map (kbd "C-S-f") 'find-file)
 (define-key global-map "\C-z" 'advertised-undo)
@@ -295,52 +225,29 @@
 (define-key global-map "\C-n" 'next-error)
 (define-key global-map (kbd "C-S-p") (kbd "C-M-p"))
 (define-key global-map (kbd "C-p") (kbd "C-M-n"))
-(setq shell-pop-shell-type '("eshell" "*eshell*" (lambda () (eshell))))
-(global-set-key (kbd "C-S-s") 'shell-pop)
+(define-key global-map "\C-l" 'goto-line)
+(define-key global-map "\C-r" 'query-replace )
+;(setq shell-pop-shell-type '("eshell" "*eshell*" (lambda () (eshell))))
+;(global-set-key (kbd "C-S-s") 'shell-pop)
 
 (define-key global-map (kbd "C-S-x") 'kill-region)
-
-(with-eval-after-load 'flycheck
-  (flycheck-pos-tip-mode))
-
 ;;指定文字のハイライト
 (require 'auto-highlight-symbol)
 (global-auto-highlight-symbol-mode t)
 
-(require 'company)
-(global-company-mode) ; 全バッファで有効にする
-(setq company-idle-delay 0) ; デフォルトは0.5
-(setq company-minimum-prefix-length 4) ; デフォルトは4
-(setq company-selection-wrap-around t) ; 候補の一番下でさらに下に行こうとすると一番上に戻る
-
-(add-hook 'c-mode-hook '(lambda () (setq tab-width 4)))
-(add-hook 'c++-mode-hook '(lambda () (setq tab-width 4)))
-
-;; メニューバーを消す
-(menu-bar-mode -1)
-
-;; ツールバーを消す
-(tool-bar-mode -1)
-
-;; "yes or no" の選択を "y or n" にする
-(fset 'yes-or-no-p 'y-or-n-p)
-
-;;UTF-8
-(prefer-coding-system 'utf-8-unix)
-(setq coding-system-for-read 'utf-8)
-(setq coding-system-for-write 'utf-8)
-
 ;;時計セット
-(display-time)
-(setq display-time-string-forms
- '((format "%s/%s(%s)%s:%s"
-		 month day dayname
-		 24-hours minutes
-		 )))
+;;(display-time)
+;;(setq display-time-string-forms
+;; '((format "%s/%s(%s)%s:%s"
+;;		 month day dayname
+;;		 24-hours minutes
+;;		 )))
 
-(load "saveplace")
-(setq-default save-place t)
+;;(load "saveplace")
+;;(setq-default save-place t)
 
+;; スクリーンの最大化
+(set-frame-parameter nil 'fullscreen 'maximized)
 ;; # 画面分割
 (defun split-window-automatically ()
   (interactive)
@@ -356,6 +263,250 @@
 ;; C-x q で現在カーソルがあるウィンドウ以外のウィンドウを全て削除
 (define-key global-map (kbd "C-S-q") (kbd "C-x 1"))
 (define-key global-map (kbd "C-S-z") (kbd "C-x 0"))
+
+;;定型文挿入
+(require 'autoinsert)
+(add-hook 'find-file-hooks 'auto-insert)
+(setq auto-insert-directory "~/example/")
+(setq auto-insert-alist
+      (append '(
+                (c++-mode . "text.cpp")
+               ) auto-insert-alist))
+
+
+;;C, C++
+(add-hook 'c-mode-hook '(lambda () (setq tab-width 4)))
+(add-hook 'c++-mode-hook '(lambda () (setq tab-width 4)))
+
+;;補完
+(require 'irony)
+(add-hook 'c-mode-hook 'irony-mode)
+(add-hook 'c++-mode-hook 'irony-mode)
+(add-hook 'objc-mode-hook 'irony-mode)
+(add-hook 'irony-mode-hook 'irony-cdb-autosetup-compile-options)
+
+(add-hook 'c-mode-hook
+          (lambda ()
+            (require 'auto-complete)))
+
+(add-hook 'c++-mode-hook
+          (lambda ()
+            (require 'auto-complete)))
+(add-hook 'c-mode-hook
+          (lambda ()
+            (require 'company)
+            (setq company-idle-delay 0) ; デフォルトは0.5
+            (setq company-minimum-prefix-length 2) ; デフォルトは4
+            (setq company-selection-wrap-around t))) ; 候補の一番下でさらに下に行こうとすると一番上に戻る
+
+(add-hook 'c++-mode-hook
+          (lambda ()
+            (require 'company)
+            (setq company-idle-delay 0) ; デフォルトは0.5
+            (setq company-minimum-prefix-length 2) ; デフォルトは4
+            (setq company-selection-wrap-around t))) ; 候補の一番下でさらに下に行こうとすると一番上に戻る
+
+
+(add-hook 'c-mode-hook
+          (lambda ()
+            (define-key c-mode-base-map "\"" 'electric-pair)
+            (define-key c-mode-base-map "\'" 'electric-pair)
+            (define-key c-mode-base-map "(" 'electric-pair)
+            (define-key c-mode-base-map "[" 'electric-pair)
+            (define-key c-mode-base-map "" 'electric-pair)
+            (define-key c-mode-base-map "{" 'electric-pair)))
+(add-hook 'c++-mode-hook
+          (lambda ()
+            (define-key c-mode-base-map "\"" 'electric-pair)
+            (define-key c-mode-base-map "\'" 'electric-pair)
+            (define-key c-mode-base-map "(" 'electric-pair)
+            (define-key c-mode-base-map "[" 'electric-pair)
+            (define-key c-mode-base-map "" 'electric-pair)
+            (define-key c-mode-base-map "{" 'electric-pair)))
+;;java
+;;補完
+(add-hook 'java-mode-hook
+          (lambda ()
+            (require 'auto-complete)))
+
+(add-hook 'java-mode-common-hook
+          (lambda ()
+            ;;(define-key c-mode-base-map "\"" 'electric-pair)
+            ;;(define-key c-mode-base-map "\'" 'electric-pair)
+            (define-key java-mode-base-map "(" 'electric-pair)
+            (define-key java-mode-base-map "[" 'electric-pair)
+            (define-key java-mode-base-map "" 'electric-pair)
+            (define-key java-mode-base-map "{" 'electric-pair)))
+
+;; auto-java-complete
+(add-hook  'java-mode-hook 'ajc-java-complete-mode
+           (lambda ()
+             (require 'ajc-java-complete-config)
+             (setq company-idle-delay 0) ; デフォルトは0.5
+             (setq company-minimum-prefix-length 1) ; デフォルトは4
+             (setq company-selection-wrap-around t))) ; 候補の一番下でさらに下に行こうとすると一番上に戻る
+
+;;Golang
+
+(add-hook 'go-mode-hook '(lambda () (setq tab-width 4)))
+;;補完
+(add-hook 'go-mode-hook
+          (lambda ()
+            (require 'auto-complete)))
+(add-hook 'go-mode-hook
+          (lambda ()
+            (require 'company)
+            (setq company-idle-delay 0) ; デフォルトは0.5
+            (setq company-minimum-prefix-length 2) ; デフォルトは4
+            (setq company-selection-wrap-around t))) ; 候補の一番下でさらに下に行こうとすると一番上に戻る
+(add-hook 'go-mode-hook (lambda()
+                          (add-hook 'before-save-hook' 'gofmt-before-save)
+                          (local-set-key (kbd "M-.") 'godef-jump)
+                          (set (make-local-variable 'company-backends) '(company-go))
+                          (company-mode)
+                          ))
+
+(add-hook 'go-mode-hook
+          (lambda ()
+            (define-key go-mode-map "\"" 'electric-pair)
+            (define-key go-mode-map "\'" 'electric-pair)
+            (define-key go-mode-map "(" 'electric-pair)
+            (define-key go-mode-map "[" 'electric-pair)
+            (define-key go-mode-map "{" 'electric-pair)))
+
+(setq gofmt-command "goimports")
+(add-hook 'before-save-hook 'gofmt-before-save)
+
+(add-hook 'go-mode-hook 'flycheck-mode)
+(add-hook 'before-save-hook 'gofmt-before-save)
+(require 'go-eldoc)
+(add-hook 'go-mode-hook 'go-eldoc-setup)
+(set-face-attribute 'eldoc-highlight-function-argument nil
+                    :underline t :foreground "green"
+                    :weight 'bold)
+
+;;Python
+;;補完
+(add-hook 'python-mode-hook '(lambda () (setq tab-width 4)))
+;;(add-hook 'python-mode-hook
+;;          (lambda ()
+;;            (require 'auto-complete)))
+;(add-hook 'python-mode-hook
+;	  (lambda ()
+;(require 'company)
+;(setq company-idle-delay 0) ; デフォルトは0.5
+;(setq company-minimum-prefix-length 1) ; デフォルトは4
+;(setq company-selection-wrap-around t))) ; 候補の一番下でさらに下に行こうとすると一番上に戻る
+
+(require 'epc)
+(require 'auto-complete-config)
+(require 'python)
+(require 'jedi)
+(setq jedi:complete-on-dot t)
+(setq jedi:use-shortcuts t)
+(add-hook 'python-mode-hook 'jedi:setup)
+
+(add-hook 'python-mode-hook
+          (lambda ()
+            (define-key python-mode-map "\"" 'electric-pair)
+            (define-key python-mode-map "\'" 'electric-pair)
+            (define-key python-mode-map "(" 'electric-pair)
+            (define-key python-mode-map "[" 'electric-pair)
+            (define-key python-mode-map "{" 'electric-pair)))
+
+;;pythonの時の色指定
+;;(require 'python-mode)
+;;(set-face-foreground 'py-variable-name-face "red")
+;;(set-face-foreground 'py-import-from-face "pink1")
+;;(set-face-foreground 'py-builtins-face "maroon2")
+
+;;matlab
+;;補完
+(autoload 'matlab-mode "matlab" "Enter Matlab mode." t)
+
+(setq auto-mode-alist (cons '("\\.m$" . matlab-mode) auto-mode-alist))
+(add-hook 'matlab-mode-hook
+          (lambda ()
+            (require 'auto-complete)))
+
+
+;;js
+
+;(add-hook 'js2-mode-hook
+;          '(lambda ()
+;             (when (locate-library "tern")
+;               (setq tern-command '("tern" "--no-port-file")) ;; .term-port を作らない
+;               (tern-mode t)
+;               (eval-after-load 'tern
+;                 '(progn
+;                    (require 'tern-auto-complete)
+;                    (tern-ac-setup)))
+;               )
+;             ))
+
+
+;(add-hook 'js-mode-hook #'js-auto-format-mode)
+;(add-hook 'js-mode-hook #'add-node-modules-path)
+
+
+;;; yatex
+(require 'yatex)                ;; パッケージ読み込み
+(add-to-list 'auto-mode-alist '("\\.tex\\'" . yatex-mode)) ;;auto-mode-alistへの追加
+(setq tex-command "platex")       ;; 自分の環境に合わせて""内を変えてください
+(setq bibtex-command "pbibtex")    ;; 自分の環境に合わせて""内を変えてください
+(setq tex-run-command "ptex2pdf -u -e -ot '-synctex=1 -interaction=nonstopmode'")
+;(setq tex-run-command "luatex -synctex=1 -interaction=nonstopmode")
+(setq latex-run-command "ptex2pdf -u -l -ot '-synctex=1 -interaction=nonstopmode'")
+(setq tex-command "latexmk -pvc")
+;;(setq tex-command "latexmk -c")
+;(setq latex-run-command "lualatex -synctex=1 -interaction=nonstopmode")
+(setq tex-bibtex-command "latexmk -e '$latex=q/uplatex %O -synctex=1 -interaction=nonstopmode %S/' -e '$bibtex=q/upbibtex %O %B/' -e '$biber=q/biber %O --bblencoding=utf8 -u -U --output_safechars %B/' -e '$makeindex=q/upmendex %O -o %D %S/' -e '$dvipdf=q/dvipdfmx %O -o %D %S/' -norc -gg -pdfdvi")
+(setq tex-print-file-extension ".pdf")
+(setq tex-dvi-view-command "evince")
+
+(setq YaTeX-kanji-code 4   ; 1: SJIS, 2: JIS, 3: EUC, 4: UTF-8
+      YaTeX-latex-message-code 'utf-8  ; 文字化けしないようにする
+      )
+;reftex-mode
+(add-hook 'yatex-mode-hook
+         #'(lambda ()
+              (reftex-mode 1)
+              (define-key reftex-mode-map
+                (concat YaTeX-prefix ">") 'YaTeX-comment-region)
+              (define-key reftex-mode-map
+                (concat YaTeX-prefix "<") 'YaTeX-uncomment-region)))
+
+(setq reftex-default-bibliography '("~/Desktop/paper/bibliography.tex"))
+
+(require 'dbus)
+(defun un-urlify (fname-or-url)
+  "A trivial function that replaces a prefix of file:/// with just /."
+  (if (string= (substring fname-or-url 0 8) "file:///")
+      (substring fname-or-url 7)
+    fname-or-url))
+(defun evince-inverse-search (file linecol &rest ignored)
+  (let* ((fname (decode-coding-string (url-unhex-string (un-urlify file)) 'utf-8))
+         (buf (find-file fname))
+         (line (car linecol))
+         (col (cadr linecol)))
+    (if (null buf)
+        (message "[Synctex]: %s is not opened..." fname)
+      (switch-to-buffer buf)
+      (goto-line (car linecol))
+      (unless (= col -1)
+        (move-to-column col))
+      (x-focus-frame (selected-frame)))))
+(dbus-register-signal
+ :session nil "/org/gnome/evince/Window/0"
+ "org.gnome.evince.Window" "SyncSource"
+ 'evince-inverse-search)
+
+;;
+;; RefTeX with TeX mode
+;;
+(add-hook 'latex-mode-hook 'turn-on-reftex)
+(add-hook 'yatex-mode-hook'(lambda ()(setq auto-fill-function nil)))
+
 (custom-set-variables
  ;; custom-set-variables was added by Custom.
  ;; If you edit it by hand, you could mess it up, so be careful.
@@ -363,4 +514,4 @@
  ;; If there is more than one, they won't work right.
  '(package-selected-packages
    (quote
-    (fuzzy ## company-c-headers ctags-update jedi-direx mozc rainbow-delimiters company-tern golden-ratio-scroll-screen javap-mode yasnippet-snippets auto-auto-indent java-imports tern-auto-complete tern auto-complete-c-headers js2-mode add-node-modules-path js-auto-format-mode flycheck-pos-tip package-utils ace-isearch yasnippet python-mode neotree jedi golden-ratio company auto-highlight-symbol atom-one-dark-theme))))
+    (auto-complete-auctex smartparens go-complete go-errcheck dumb-jump company-ctags company-go go-eldoc go-autocomplete go-mode auto-indent-mode irony matlab-mode magit avy-flycheck ace-jump-mode ac-mozc yatex atom-dark-theme fuzzy ## company-c-headers ctags-update jedi-direx mozc rainbow-delimiters company-tern golden-ratio-scroll-screen javap-mode yasnippet-snippets auto-auto-indent java-imports tern-auto-complete tern auto-complete-c-headers js2-mode add-node-modules-path js-auto-format-mode flycheck-pos-tip package-utils ace-isearch yasnippet python-mode neotree jedi golden-ratio company auto-highlight-symbol atom-one-dark-theme))))
