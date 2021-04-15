@@ -61,7 +61,7 @@
 (global-linum-mode 1)
 
 ;; tabサイズ
-;;(setq tab-width 4)
+(setq tab-width 4)
 ;; タブにスペースを使用する
 (setq-default tab-width 4 indent-tabs-mode nil)
 
@@ -69,10 +69,10 @@
 (setq c-argdecl-indent 0)       ; 関数の引数行のインデント
                                 ; 但し引数行で明示的にタブを押さない
                                 ; 場合は、インデントしない
-(setq c-auto-newline nil)             ; 自動改行
+(setq c-auto-newline t)             ; 自動改行
 (c-set-offset 'substatement-open 0) ; { を書く時のインデント
 (c-set-offset 'inline-open 0)
-(c-set-offset 'c-indent-level 4)               ; { を書いた後のインデント
+(c-set-offset 'c-indent-level 0)               ; { を書いた後のインデント
 (setq c-label-offset 0)              ; ラベルの深さ
 (setq c-tab-always-indent t)          ; タブ記号を押した時にユーザーが
                                       ; 任意にタブ記号を入れることは不可
@@ -140,6 +140,12 @@
  ;;  (quote
 ;;	(golden-ratio company-irony-c-headers company-irony ctags-update helm-gtags highlight-symbol python-mode js2-mode neotree auto-complete))))
 
+;;;; for ctags.el
+(require 'ctags nil t)
+(setq tags-revert-without-query t)
+(setq ctags-command "ctags -R --fields=\"+afikKlmnsSzt\" ")
+(global-set-key (kbd "<f5>") 'ctags-create-or-update-tags-table)
+
 ;;treeを表示
 (require 'neotree)
 (global-set-key "\C-t" 'neotree-toggle)
@@ -173,10 +179,20 @@
   (let (parens-require-spaces)
     (insert-pair)))
 
+(defun electric-pair2 ()
+  "Insert character pair without sournding spaces2"
+  (interactive)
+  (let (parens-require-spaces)
+    (newline)
+    (indent-to 4)
+    (insert-pair)
+    (newline-and-indent)
+    (newline-and-indent)))
+
 
 ;;ALL
 (require 'company)
-(global-company-mode) ; 全バッファで有効にする
+(company-mode t) ; 全バッファで有効にする
 (setq company-transformers '(company-sort-by-backend-importance)) ;; ソート順
 (setq company-idle-delay 0) ; デフォルトは0.5
 (setq company-minimum-prefix-length 3) ; デフォルトは4
@@ -184,12 +200,48 @@
 (setq completion-ignore-case t)
 (setq company-dabbrev-downcase nil)
 
+;; ivy設定
+(require 'ivy)
+(ivy-mode 1)
+(setq ivy-use-virtual-buffers t)
+(setq enable-recursive-minibuffers t)
+(setq ivy-height 10) ;; minibufferのサイズを拡大！（重要）
+(setq ivy-extra-directories nil)
+(setq ivy-re-builders-alist
+      '((t . ivy--regex-plus)))
+
+
 ;;全検索のショートカットキー 設定
 
 ;;(setq tags-table-list '("~/.emacs.d/soccer_tag"))
 ;;定義ジャンプのショートカットキー
 
-(define-key global-map "\C-a" 'isearch-forward)
+;; (define-key global-map "\C-a" 'isearch-forward)
+
+;; counsel設定
+;; (global-set-key (kbd "C-x C-f") 'counsel-find-file) ;; find-fileもcounsel任せ！
+;; (setq counsel-find-file-ignore-regexp (regexp-opt '("./" "../")))
+
+;; (when (locate-library "counsel")
+;;   (require 'counsel)
+;;   (counsel-mode 1)
+;; )
+
+;; (when (locate-library "swiper")
+;;   (require 'swiper)
+;;   (global-set-key (kbd "C-c a") 'swiper)
+;; )
+(when (require 'swiper nil t)
+  ;; キーバインドは一例です．好みに変えましょう．
+  (global-set-key (kbd "C-a") 'swiper-thing-at-point)
+  (setq swiper-include-line-number-in-search t) ;; line-numberでも検索可能
+)
+
+;; migemo + swiper（日本語をローマ字検索できるようになる）
+;; (require 'avy-migemo)
+;; (avy-migemo-mode 1)
+;; (require 'avy-migemo-e.g.swiper)
+
 
 ;;(require 'ace-isearch)
 ;;(global-ace-isearch-mode +1)
@@ -211,8 +263,9 @@
 (setq special-display-buffer-names '("*Help*" "*compilation*" "*interpretation*" "*grep*" ))
 
 (setq dumb-jump-mode t)
+(setq dumb-jump-force-searcher 'rg)
 (setq dumb-jump-selector 'ivy)
-(setq dumb-jump-use-visible-window nil)
+(setq dumb-jump-use-visible-window t)
 (define-key global-map "\C-w" 'dumb-jump-go)
 (define-key global-map "\C-e" 'dumb-jump-back)
 (define-key global-map "\C-s" 'save-buffer)
@@ -267,11 +320,61 @@
 ;;定型文挿入
 (require 'autoinsert)
 (add-hook 'find-file-hooks 'auto-insert)
-(setq auto-insert-directory "~/example/")
 (setq auto-insert-alist
       (append '(
-                (c++-mode . "text.cpp")
-               ) auto-insert-alist))
+                (("\\.py$" . "python template")
+                 nil
+                 "import sys, os, math\n"
+                 "import numpy as np\n"
+                 "import scipy as sp\n"
+                 "\n"
+                 _
+                 )) auto-insert-alist))
+(setq auto-insert-alist
+      (append '(
+                (("\\.sh$" . "shell script template")
+                 nil
+                 "#!/bin/bash\n"
+                 "\n"
+                 _
+                 )) auto-insert-alist))
+(setq auto-insert-alist
+      (append '(
+                (("\\.cpp$" . "C++ script template")
+                 nil
+                 "#include<bits/stdc++.h>\n"
+                 "#define rep(i,n) for(int i = 0; i < (n); ++i)\n"
+                 "using namespace std;\n"
+                 "#define pri(str) cout << str << endl;\n"
+                 "using ll = long long;\n"
+                 "using P = pair<int, int>;\n"
+                 "\n"
+                 "const ll MX = 1e18;\n"
+                 "const long double PI = acos(-1);\n"
+                 "\n"
+                 "template<class T> inline bool chmin(T& a, T b) {\n"
+                 "    if (a > b) {\n"
+                 "        a = b;\n"
+                 "        return true;\n"
+                 "    }\n"
+                 "    return false;\n"
+                 "}\n"
+                 "\n"
+                 "template<class T> inline bool chmax(T& a, T b) {\n"
+                 "    if (a < b) {\n"
+                 "        a = b;\n"
+                 "        return true;\n"
+                 "    }\n"
+                 "    return false;\n"
+                 "}\n"
+                 "\n"
+                 "\n"
+                 "int main()\n"
+                 "{\n"
+                 "    "_"\n"
+                 "    return 0;\n"
+                 "}\n"
+                 )) auto-insert-alist))
 
 
 ;;C, C++
@@ -314,7 +417,7 @@
             (define-key c-mode-base-map "(" 'electric-pair)
             (define-key c-mode-base-map "[" 'electric-pair)
             (define-key c-mode-base-map "" 'electric-pair)
-            (define-key c-mode-base-map "{" 'electric-pair)))
+            (define-key c-mode-base-map "{" 'electric-pair2)))
 (add-hook 'c++-mode-hook
           (lambda ()
             (define-key c-mode-base-map "\"" 'electric-pair)
@@ -322,7 +425,7 @@
             (define-key c-mode-base-map "(" 'electric-pair)
             (define-key c-mode-base-map "[" 'electric-pair)
             (define-key c-mode-base-map "" 'electric-pair)
-            (define-key c-mode-base-map "{" 'electric-pair)))
+            (define-key c-mode-base-map "{" 'electric-pair2)))
 ;;java
 ;;補完
 (add-hook 'java-mode-hook
@@ -336,7 +439,7 @@
             (define-key java-mode-base-map "(" 'electric-pair)
             (define-key java-mode-base-map "[" 'electric-pair)
             (define-key java-mode-base-map "" 'electric-pair)
-            (define-key java-mode-base-map "{" 'electric-pair)))
+            (define-key java-mode-base-map "{" 'electric-pair2)))
 
 ;; auto-java-complete
 (add-hook  'java-mode-hook 'ajc-java-complete-mode
@@ -372,7 +475,7 @@
             (define-key go-mode-map "\'" 'electric-pair)
             (define-key go-mode-map "(" 'electric-pair)
             (define-key go-mode-map "[" 'electric-pair)
-            (define-key go-mode-map "{" 'electric-pair)))
+            (define-key go-mode-map "{" 'electric-pair2)))
 
 (setq gofmt-command "goimports")
 (add-hook 'before-save-hook 'gofmt-before-save)
@@ -412,7 +515,7 @@
             (define-key python-mode-map "\'" 'electric-pair)
             (define-key python-mode-map "(" 'electric-pair)
             (define-key python-mode-map "[" 'electric-pair)
-            (define-key python-mode-map "{" 'electric-pair)))
+            (define-key python-mode-map "{" 'electric-pair2)))
 
 ;;pythonの時の色指定
 ;;(require 'python-mode)
@@ -501,6 +604,9 @@
  "org.gnome.evince.Window" "SyncSource"
  'evince-inverse-search)
 
+(require 'helm)
+(require 'helm-config)
+
 ;;
 ;; RefTeX with TeX mode
 ;;
@@ -512,6 +618,14 @@
  ;; If you edit it by hand, you could mess it up, so be careful.
  ;; Your init file should contain only one such instance.
  ;; If there is more than one, they won't work right.
+ '(avy-migemo-function-names
+   (quote
+    (swiper--add-overlays-migemo
+     (swiper--re-builder :around swiper--re-builder-migemo-around)
+     (ivy--regex :around ivy--regex-migemo-around)
+     (ivy--regex-ignore-order :around ivy--regex-ignore-order-migemo-around)
+     (ivy--regex-plus :around ivy--regex-plus-migemo-around)
+     ivy--highlight-default-migemo ivy-occur-revert-buffer-migemo ivy-occur-press-migemo avy-migemo-goto-char avy-migemo-goto-char-2 avy-migemo-goto-char-in-line avy-migemo-goto-char-timer avy-migemo-goto-subword-1 avy-migemo-goto-word-1 avy-migemo-isearch avy-migemo-org-goto-heading-timer avy-migemo--overlay-at avy-migemo--overlay-at-full)))
  '(package-selected-packages
    (quote
-    (auto-complete-auctex smartparens go-complete go-errcheck dumb-jump company-ctags company-go go-eldoc go-autocomplete go-mode auto-indent-mode irony matlab-mode magit avy-flycheck ace-jump-mode ac-mozc yatex atom-dark-theme fuzzy ## company-c-headers ctags-update jedi-direx mozc rainbow-delimiters company-tern golden-ratio-scroll-screen javap-mode yasnippet-snippets auto-auto-indent java-imports tern-auto-complete tern auto-complete-c-headers js2-mode add-node-modules-path js-auto-format-mode flycheck-pos-tip package-utils ace-isearch yasnippet python-mode neotree jedi golden-ratio company auto-highlight-symbol atom-one-dark-theme))))
+    (swiper-helm swiper auto-complete-exuberant-ctags helm auto-complete-auctex smartparens go-complete go-errcheck dumb-jump company-ctags company-go go-eldoc go-autocomplete go-mode auto-indent-mode irony matlab-mode magit avy-flycheck ace-jump-mode ac-mozc yatex atom-dark-theme fuzzy ## company-c-headers ctags-update jedi-direx mozc rainbow-delimiters company-tern golden-ratio-scroll-screen javap-mode yasnippet-snippets auto-auto-indent java-imports tern-auto-complete tern auto-complete-c-headers js2-mode add-node-modules-path js-auto-format-mode flycheck-pos-tip package-utils ace-isearch yasnippet python-mode neotree jedi golden-ratio company auto-highlight-symbol atom-one-dark-theme))))
