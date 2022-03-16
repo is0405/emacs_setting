@@ -61,9 +61,9 @@
 (global-linum-mode 1)
 
 ;; tabサイズ
-(setq tab-width 4)
+(setq tab-width 2)
 ;; タブにスペースを使用する
-(setq-default tab-width 4 indent-tabs-mode nil)
+(setq-default tab-width 2 indent-tabs-mode nil)
 
 (setq c-basic-offset 4)
 (setq c-argdecl-indent 0)       ; 関数の引数行のインデント
@@ -211,6 +211,7 @@
 (add-hook 'c-mode-hook 'irony-mode)
 (add-hook 'c++-mode-hook 'irony-mode)
 (add-hook 'irony-mode-hook 'irony-cdb-autosetup-compile-options)
+
 
 (require 'company)
 (global-company-mode); 全バッファで有効にする
@@ -515,35 +516,43 @@
 
 
 ;;js
+(add-to-list 'auto-mode-alist '("\\.js\\'" . js2-mode))
+(add-hook 'js2-mode-hook 'global-flycheck-mode)
+(add-hook 'js2-mode-hook
+          (lambda ()
+             (setq my-js-mode-indent-num 2)
+             (setq js2-basic-offset my-js-mode-indent-num)
+             (setq js-switch-indent-offset my-js-mode-indent-num)
+            ))
 
-;(add-hook 'js2-mode-hook
-;          '(lambda ()
-;             (when (locate-library "tern")
-;               (setq tern-command '("tern" "--no-port-file")) ;; .term-port を作らない
-;               (tern-mode t)
-;               (eval-after-load 'tern
-;                 '(progn
-;                    (require 'tern-auto-complete)
-;                    (tern-ac-setup)))
-;               )
-;             ))
+(add-hook 'js2-mode-hook
+    (lambda ()
+        (tern-mode t)))
+
+(eval-after-load 'tern
+    '(progn
+        (require 'tern-auto-complete)
+        (tern-ac-setup)))
 
 
-(add-hook 'js-mode-hook #'js-auto-format-mode)
-(add-hook 'ts-mode-hook #'ts-auto-format-mode)
-(add-hook 'js-mode-hook
+(add-hook 'js2-mode-hook '(lambda () (setq tab-width 2)))
+(add-hook 'js2-mode-hook 'js-auto-format-mode)
+(add-hook 'js2-mode-hook 'js-auto-beautify-mode)
+(add-hook 'ts-mode-hook 'ts-auto-format-mode)
+(add-hook 'ts-mode-hook '(lambda () (setq tab-width 2)))
+(add-hook 'js2-mode-hook
           (lambda ()
             (require 'auto-complete)))
 (add-hook 'ts-mode-hook
           (lambda ()
             (require 'auto-complete)))
 
-(add-hook 'js-mode-common-hook
+(add-hook 'js2-mode-common-hook
           (lambda ()
-            (define-key js-mode-base-map "(" 'electric-pair)
-            (define-key js-mode-base-map "[" 'electric-pair)
-            (define-key js-mode-base-map "" 'electric-pair)
-            (define-key js-mode-base-map "{" 'electric-pair2)))
+            (define-key js2-mode-base-map "(" 'electric-pair)
+            (define-key js2-mode-base-map "[" 'electric-pair)
+            (define-key js2-mode-base-map "" 'electric-pair)
+            (define-key js2-mode-base-map "{" 'electric-pair2)))
 (add-hook 'ts-mode-common-hook
           (lambda ()
             (define-key ts-mode-base-map "(" 'electric-pair)
@@ -558,6 +567,7 @@
           (lambda ()
             (require 'auto-complete)))
 
+(add-hook 'web-mode-hook '(lambda () (setq tab-width 2)))
 (add-hook 'web-mode-common-hook
           (lambda ()
             (define-key web-mode-base-map "(" 'electric-pair)
@@ -625,6 +635,24 @@
 (add-hook 'latex-mode-hook 'turn-on-reftex)
 (add-hook 'yatex-mode-hook'(lambda ()(setq auto-fill-function nil)))
 
+; 余分なメッセージを削除しておきましょう
+(defmacro with-suppressed-message (&rest body)
+  "Suppress new messages temporarily in the echo area and the `*Messages*' buffer while BODY is evaluated."
+  (declare (indent 0))
+  (let ((message-log-max nil))
+    `(with-temp-message (or (current-message) "") ,@body)))
+
+(require 'recentf)
+(setq recentf-save-file "~/.emacs.d/.recentf")
+(setq recentf-max-saved-items 200)             ;; recentf に保存するファイルの数
+(setq recentf-exclude '(".recentf"))           ;; .recentf自体は含まない
+(setq recentf-auto-cleanup 'never)             ;; 保存する内容を整理
+(run-with-idle-timer 30 t '(lambda () (with-suppressed-message (recentf-save-list))))
+(require 'recentf-ext) ;; ちょっとした拡張
+
+(define-key global-map (kbd "C-b") 'counsel-recentf) ;; counselにおまかせ！
+
+
 
 (custom-set-variables
  ;; custom-set-variables was added by Custom.
@@ -641,4 +669,4 @@
      ivy--highlight-default-migemo ivy-occur-revert-buffer-migemo ivy-occur-press-migemo avy-migemo-goto-char avy-migemo-goto-char-2 avy-migemo-goto-char-in-line avy-migemo-goto-char-timer avy-migemo-goto-subword-1 avy-migemo-goto-word-1 avy-migemo-isearch avy-migemo-org-goto-heading-timer avy-migemo--overlay-at avy-migemo--overlay-at-full)))
  '(package-selected-packages
    (quote
-    (web-mode-edit-element ac-html ts ob-typescript frontside-javascript auto-virtualenvwrapper virtualenv company-jedi helm-company paren-face counsel swiper-helm swiper auto-complete-exuberant-ctags helm auto-complete-auctex smartparens go-complete go-errcheck dumb-jump company-ctags company-go go-eldoc go-autocomplete go-mode auto-indent-mode irony matlab-mode magit avy-flycheck ace-jump-mode ac-mozc yatex atom-dark-theme fuzzy ## company-c-headers ctags-update jedi-direx mozc rainbow-delimiters company-tern golden-ratio-scroll-screen javap-mode yasnippet-snippets auto-auto-indent java-imports tern-auto-complete tern auto-complete-c-headers js2-mode add-node-modules-path js-auto-format-mode flycheck-pos-tip package-utils ace-isearch yasnippet python-mode neotree jedi golden-ratio company auto-highlight-symbol atom-one-dark-theme))))
+    (tern-context-coloring sync-recentf jsfmt js-auto-beautify js-format lsp-jedi web-mode-edit-element ac-html ts ob-typescript frontside-javascript auto-virtualenvwrapper virtualenv company-jedi helm-company paren-face counsel swiper-helm swiper auto-complete-exuberant-ctags helm auto-complete-auctex smartparens go-complete go-errcheck dumb-jump company-ctags company-go go-eldoc go-autocomplete go-mode auto-indent-mode irony matlab-mode magit avy-flycheck ace-jump-mode ac-mozc yatex atom-dark-theme fuzzy ## company-c-headers ctags-update jedi-direx mozc rainbow-delimiters company-tern golden-ratio-scroll-screen javap-mode yasnippet-snippets auto-auto-indent java-imports tern-auto-complete tern auto-complete-c-headers js2-mode add-node-modules-path js-auto-format-mode flycheck-pos-tip package-utils ace-isearch yasnippet python-mode neotree jedi golden-ratio company auto-highlight-symbol atom-one-dark-theme))))
