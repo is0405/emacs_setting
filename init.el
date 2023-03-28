@@ -1,4 +1,4 @@
-;;; init.el --- 
+;; init.el --- 
 ;; Added by Package.el.  This must come before configurations of
 ;; installed packages.  Don't delete this line.  If you don't want it,
 ;; just comment it out by adding a semicolon to the start of the line.
@@ -29,31 +29,26 @@
 (prefer-coding-system 'utf-8-unix)
 (setq coding-system-for-read 'utf-8)
 (setq coding-system-for-write 'utf-8)
-;;(set-face-background 'default "gray20")
-;;(add-to-list 'default-frame-alist '(foreground-color . "white"))
-;; ごとの色
-;;(add-hook 'font-lock-mode-hook
-;;'(lambda ()
-;;(set-face-foreground 'font-lock-comment-face "lightgreen")
-;;(set-face-foreground 'font-lock-string-face "LightSalmon")
-;;(set-face-foreground 'font-lock-keyword-face "Cyan1")
-;; (set-face-foreground 'font-lock-keyword-face "green2")  ; 微調整
-;;(set-face-foreground 'font-lock-builtin-face "LightSteelBlue")
-;;(set-face-foreground 'font-lock-function-name-face "LightSkyBlue")
-;;(set-face-foreground 'font-lock-variable-name-face "Pink")
-;;(set-face-foreground 'font-lock-type-face "green2")
-;;(set-face-foreground 'font-lock-constant-face "red")
-;;(set-face-foreground 'font-lock-warning-face "Pink")
-;;)
-;; )
+
 (add-to-list 'custom-theme-load-path "~/.emacs.d/atom-one-dark-theme/")
 (load-theme 'atom-one-dark t)
+(if window-system 
+    (progn
+      (set-frame-parameter nil 'alpha 95)))
 
-(setq default-frame-alist
-  '(
-    (width . 95)
-    (height . 50)
-   ))
+;; (setq default-frame-alist
+;;    '(
+;;      (width . 95)
+;;      (height . 50)
+;;     ))
+
+;; スクリーンの最大化
+(set-frame-parameter nil 'fullscreen 'maximized)
+
+;; バッファの内容を自動保管 (秒)
+(require 'auto-save-buffers-enhanced)
+(setq auto-save-buffers-enhanced-interval 1) ; 指定のアイドル秒で保存
+(auto-save-buffers-enhanced t)
 
 
 ;; line numberの表示
@@ -212,7 +207,6 @@
 (add-hook 'c++-mode-hook 'irony-mode)
 (add-hook 'irony-mode-hook 'irony-cdb-autosetup-compile-options)
 
-
 (require 'company)
 (global-company-mode); 全バッファで有効にする
 (setq company-transformers '(company-sort-by-backend-importance)) ;; ソート順
@@ -226,6 +220,11 @@
 (require 'ivy)
 (ivy-mode 1)
 
+(require 'helm)
+(require 'helm-config)
+(helm-mode 1)
+(helm-autoresize-mode t)
+
 ;;全検索のショートカットキー 設定
 
 ;;(setq tags-table-list '("~/.emacs.d/soccer_tag"))
@@ -234,26 +233,10 @@
 ;; (define-key global-map "\C-a" 'isearch-forward)
 
 
-;; (when (locate-library "swiper")
-;;   (require 'swiper)
-;;   (global-set-key (kbd "C-c a") 'swiper)
-;; )
 (when (require 'swiper nil t)
   ;; キーバインドは一例です．好みに変えましょう．
-  (global-set-key (kbd "C-a") 'swiper-thing-at-point)
-  (setq swiper-include-line-number-in-search t) ;; line-numberでも検索可能
+  (global-set-key (kbd "C-a") 'swiper-helm)
 )
-
-;; migemo + swiper（日本語をローマ字検索できるようになる）
-;; (require 'avy-migemo)
-;; (avy-migemo-mode 1)
-;; (require 'avy-migemo-e.g.swiper)
-
-
-;;(require 'ace-isearch)
-;;(global-ace-isearch-mode +1)
-;;(setq ace-isearch-use-function-from-isearch nil)
-;;(define-key isearch-mode-map (kbd "\C-a") 'helm-multi-swoop-all-from-isearch)
 
 ;; ファイル内検索（いらないメッセージは消去）
 (define-key global-map (kbd "C-f") 'rgrep)
@@ -273,6 +256,7 @@
 (setq dumb-jump-force-searcher 'rg)
 (setq dumb-jump-selector 'ivy)
 (setq dumb-jump-use-visible-window t)
+(global-set-key (kbd "M-x") 'helm-M-x)
 (define-key global-map "\C-w" 'dumb-jump-go)
 (define-key global-map "\C-e" 'dumb-jump-back)
 (define-key global-map "\C-s" 'save-buffer)
@@ -289,7 +273,7 @@
 (define-key global-map "\C-l" 'goto-line)
 (define-key global-map "\C-r" 'query-replace )
 (setq shell-pop-shell-type '("eshell" "*eshell*" (lambda () (eshell))))
-(global-set-key "\C-c\C-s" 'shell-pop)
+(global-set-key "\C-c\C-s" 'shell)
 
 (define-key global-map (kbd "C-S-x") 'kill-region)
 ;;指定文字のハイライト
@@ -438,18 +422,18 @@
 (add-hook 'go-mode-hook
           (lambda ()
             (require 'auto-complete)))
-;; (add-hook 'go-mode-hook
-;;           (lambda ()
-;;             (require 'company)
-;;             (setq company-idle-delay 0) ; デフォルトは0.5
-;;             (setq company-minimum-prefix-length 2) ; デフォルトは4
-;;             (setq company-selection-wrap-around t))) ; 候補の一番下でさらに下に行こうとすると一番上に戻る
-(add-hook 'go-mode-hook (lambda()
-                          (add-hook 'before-save-hook' 'gofmt-before-save)
-                          (local-set-key (kbd "M-.") 'godef-jump)
-                          (set (make-local-variable 'company-backends) '(company-go))
-                          (company-mode)
-                          ))
+(add-hook 'go-mode-hook
+          (lambda ()
+            (require 'company)
+            (setq company-idle-delay 0) ; デフォルトは0.5
+            (setq company-minimum-prefix-length 1) ; デフォルトは4
+            (setq company-selection-wrap-around t))) ; 候補の一番下でさらに下に行こうとすると一番上に戻る
+;; (add-hook 'go-mode-hook (lambda()
+;;                           (add-hook 'before-save-hook' 'gofmt-before-save)
+;;                           (local-set-key (kbd "M-.") 'godef-jump)
+;;                           (set (make-local-variable 'company-backends) '(company-go))
+;;                           (company-mode)
+;;                           ))
 
 (add-hook 'go-mode-hook
           (lambda ()
@@ -514,36 +498,58 @@
           (lambda ()
             (require 'auto-complete)))
 
-
 ;;js
 (add-to-list 'auto-mode-alist '("\\.js\\'" . js2-mode))
 (add-hook 'js2-mode-hook 'global-flycheck-mode)
 (add-hook 'js2-mode-hook
           (lambda ()
-             (setq my-js-mode-indent-num 2)
-             (setq js2-basic-offset my-js-mode-indent-num)
-             (setq js-switch-indent-offset my-js-mode-indent-num)
+            (setq my-js-mode-indent-num 2)
+            (setq js2-basic-offset my-js-mode-indent-num)
+            (setq js-switch-indent-offset my-js-mode-indent-num)
             ))
-
+(setq company-tern-property-marker "")
+(defun company-tern-depth (candidate)
+  "Return depth attribute for CANDIDATE. 'nil' entries are treated as 0."
+  (let ((depth (get-text-property 0 'depth candidate)))
+    (if (eq depth nil) 0 depth)))
 (add-hook 'js2-mode-hook
-    (lambda ()
-        (tern-mode t)))
+          '(lambda ()
+             (when (locate-library "tern")
+               (setq tern-command '("tern" "--no-port-file")) ;; .term-port を作らない
+               (tern-mode t)
+               (eval-after-load 'tern
+                 '(progn
+                    (require 'tern-auto-complete)
+                    (tern-ac-setup)))
+               )
+             ))
 
-(eval-after-load 'tern
-    '(progn
-        (require 'tern-auto-complete)
-        (tern-ac-setup)))
+(add-to-list 'company-backends 'company-tern) ; backendに追加
 
 
 (add-hook 'js2-mode-hook '(lambda () (setq tab-width 2)))
 (add-hook 'js2-mode-hook 'js-auto-format-mode)
 (add-hook 'js2-mode-hook 'js-auto-beautify-mode)
-(add-hook 'ts-mode-hook 'ts-auto-format-mode)
-(add-hook 'ts-mode-hook '(lambda () (setq tab-width 2)))
+(add-hook 'js-mode-hook #'js-auto-format-mode)
+(add-hook 'js-mode-hook #'add-node-modules-path)
+
+
+(require 'typescript-mode)
+(add-hook 'typescript-mode-hook '(lambda () (setq typescript-indent-level 2)))
+(add-to-list 'auto-mode-alist '("\.ts$" . typescript-mode))
+(add-to-list 'auto-mode-alist '("\\.tsx\\'" . typescript-mode))
+(require 'ansi-color)
+(defun colorize-compilation-buffer ()
+  (ansi-color-apply-on-region compilation-filter-start (point-max)))
+(add-hook 'compilation-filter-hook 'colorize-compilation-buffer)
+
+
+(add-hook 'typescript-mode-hook 'ts-auto-format-mode)
+(add-hook 'typescript-mode-hook '(lambda () (setq tab-width 2)))
 (add-hook 'js2-mode-hook
           (lambda ()
             (require 'auto-complete)))
-(add-hook 'ts-mode-hook
+(add-hook 'typescript-mode-hook
           (lambda ()
             (require 'auto-complete)))
 
@@ -563,34 +569,85 @@
 
 (require 'web-mode)
 (setq auto-mode-alist (cons '("\\.html$" . web-mode) auto-mode-alist))
+(add-to-list 'auto-mode-alist '("\\.phtml\\'" . web-mode))
+(add-to-list 'auto-mode-alist '("\\.tpl\\.php\\'" . web-mode))
+(add-to-list 'auto-mode-alist '("\\.[gj]sp\\'" . web-mode))
+(add-to-list 'auto-mode-alist '("\\.as[cp]x\\'" . web-mode))
+(add-to-list 'auto-mode-alist '("\\.erb\\'" . web-mode))
+(add-to-list 'auto-mode-alist '("\\.mustache\\'" . web-mode))
+(add-to-list 'auto-mode-alist '("\\.djhtml\\'" . web-mode))
+(add-to-list 'auto-mode-alist '("\\.html?\\'" . web-mode))
+(add-to-list 'auto-mode-alist '("\\.css?\\'" . web-mode))
+(setq web-mode-engines-alist
+'(("php"    . "\\.phtml\\'")
+  ("blade"  . "\\.blade\\.")))
+
 (add-hook 'web-mode-hook
           (lambda ()
             (require 'auto-complete)))
+(defun my-web-mode-hook ()
+  "Hooks for Web mode."
 
-(add-hook 'web-mode-hook '(lambda () (setq tab-width 2)))
-(add-hook 'web-mode-common-hook
-          (lambda ()
-            (define-key web-mode-base-map "(" 'electric-pair)
-            (define-key web-mode-base-map "[" 'electric-pair)
-            (define-key web-mode-base-map "" 'electric-pair)
-            (define-key web-mode-base-map "{" 'electric-pair2)))
+  ;; インデント設定
+  (setq web-mode-markup-indent-offset 2)
+  (setq web-mode-css-indent-offset 2)
+  (setq web-mode-code-indent-offset 2)
+  (setq-default web-beautify-args
+                '("-f"
+                  "-"
+                  "--indent_with_tabs"
+                  "--indent-size 2"
+                  "--end-with-newline"))
+  ;; 要素のハイライト
+  (setq web-mode-enable-current-element-highlight t)
+
+  ;; フォントの配色
+  (set-face-attribute 'web-mode-doctype-face nil :foreground "Pink3")
+  (set-face-attribute 'web-mode-html-tag-face nil :foreground "Green")
+  (set-face-attribute 'web-mode-html-attr-value-face nil :foreground "Yellow")
+  (set-face-attribute 'web-mode-html-attr-name-face nil :foreground "#0FF")
+
+  ;; タグを自動で閉じる
+  (setq web-mode-enable-auto-pairing t)
+  (setq web-mode-enable-auto-closing t)
+)
+(add-hook 'web-mode-hook 'my-web-mode-hook)
+
+;;Rust
+(require 'rust-mode)
+(setq auto-mode-alist (cons '("\\.rs$" . rust-mode) auto-mode-alist))
+(add-to-list 'exec-path (expand-file-name "~/.local/bin"))
+(add-to-list 'exec-path (expand-file-name "~/.cargo/bin"))
+(eval-after-load "rust-mode"
+  '(setq-default rust-format-on-save t))
+(setq lsp-rust-server 'rust-analyzer)
+(add-hook 'rust-mode-hook (lambda ()
+                            (setq tab-width 4)
+                            (flycheck-rust-setup)
+                            (lsp)
+                            (flycheck-mode)
+                            (yas-minor-mode)
+                            (require 'auto-complete)
+                            ))
+(define-key rust-mode-map "(" 'electric-pair)
+(define-key rust-mode-map "[" 'electric-pair)
+(define-key rust-mode-map "" 'electric-pair)
+(define-key rust-mode-map "{" 'electric-pair)
+(define-key rust-mode-map (kbd "C-c C-S-c") 'rust-run)
+
 
 ;;; yatex
 (require 'yatex)                ;; パッケージ読み込み
 (add-to-list 'auto-mode-alist '("\\.tex\\'" . yatex-mode)) ;;auto-mode-alistへの追加
 (setq tex-command "platex")       ;; 自分の環境に合わせて""内を変えてください
-;;(setq bibtex-command "pbibtex")    ;; 自分の環境に合わせて""内を変えてください
+(setq bibtex-command "pbibtex")    ;; 自分の環境に合わせて""内を変えてください
 (setq tex-run-command "ptex2pdf -u -e -ot '-synctex=1 -interaction=nonstopmode'")
-;(setq tex-run-command "luatex -synctex=1 -interaction=nonstopmode")
-(setq tex-command "latexmk -pvc")
-;;(setq tex-command "latexmk -c")
-;;(setq latex-run-command "lualatex -synctex=1 -interaction=nonstopmode")
 
-(setq reftex-default-bibliography '("~/Desktop/kawano/zemi/bib/main.bib"))
+(setq tex-command "latexmk -pvc")
+(setq reftex-default-bibliography '("~/Desktop/zemi_doc/main.bib"))
 (setq tex-bibtex-command "latexmk -e '$latex=q/uplatex %O -synctex=1 -interaction=nonstopmode %S/' -e '$bibtex=q/upbibtex %O %B/' -e '$biber=q/biber %O --bblencoding=utf8 -u -U --output_safechars %B/' -e '$makeindex=q/upmendex %O -o %D %S/' -e '$dvipdf=q/dvipdfmx %O -o %D %S/' -norc -gg -pdfdvi")
 (setq tex-print-file-extension ".pdf")
 (setq tex-dvi-view-command "evince")
-(setq tex-run-command "latexmk -c")
 (setq YaTeX-kanji-code 4   ; 1: SJIS, 2: JIS, 3: EUC, 4: UTF-8
       YaTeX-latex-message-code 'utf-8  ; 文字化けしないようにする
       )
@@ -626,22 +683,6 @@
  "org.gnome.evince.Window" "SyncSource"
  'evince-inverse-search)
 
-(require 'helm)
-(require 'helm-config)
-
-;;
-;; RefTeX with TeX mode
-;;
-(add-hook 'latex-mode-hook 'turn-on-reftex)
-(add-hook 'yatex-mode-hook'(lambda ()(setq auto-fill-function nil)))
-
-; 余分なメッセージを削除しておきましょう
-(defmacro with-suppressed-message (&rest body)
-  "Suppress new messages temporarily in the echo area and the `*Messages*' buffer while BODY is evaluated."
-  (declare (indent 0))
-  (let ((message-log-max nil))
-    `(with-temp-message (or (current-message) "") ,@body)))
-
 (require 'recentf)
 (setq recentf-save-file "~/.emacs.d/.recentf")
 (setq recentf-max-saved-items 200)             ;; recentf に保存するファイルの数
@@ -653,6 +694,13 @@
 (define-key global-map (kbd "C-b") 'counsel-recentf) ;; counselにおまかせ！
 
 
+
+;;
+;; RefTeX with TeX mode
+;;
+(add-hook 'latex-mode-hook 'turn-on-reftex)
+(add-hook 'yatex-mode-hook'(lambda ()(setq auto-fill-function nil)))
+(add-hook 'yatex-mode-hook 'turn-on-reftex) ; with YaTeX mode
 
 (custom-set-variables
  ;; custom-set-variables was added by Custom.
@@ -669,4 +717,4 @@
      ivy--highlight-default-migemo ivy-occur-revert-buffer-migemo ivy-occur-press-migemo avy-migemo-goto-char avy-migemo-goto-char-2 avy-migemo-goto-char-in-line avy-migemo-goto-char-timer avy-migemo-goto-subword-1 avy-migemo-goto-word-1 avy-migemo-isearch avy-migemo-org-goto-heading-timer avy-migemo--overlay-at avy-migemo--overlay-at-full)))
  '(package-selected-packages
    (quote
-    (tern-context-coloring sync-recentf jsfmt js-auto-beautify js-format lsp-jedi web-mode-edit-element ac-html ts ob-typescript frontside-javascript auto-virtualenvwrapper virtualenv company-jedi helm-company paren-face counsel swiper-helm swiper auto-complete-exuberant-ctags helm auto-complete-auctex smartparens go-complete go-errcheck dumb-jump company-ctags company-go go-eldoc go-autocomplete go-mode auto-indent-mode irony matlab-mode magit avy-flycheck ace-jump-mode ac-mozc yatex atom-dark-theme fuzzy ## company-c-headers ctags-update jedi-direx mozc rainbow-delimiters company-tern golden-ratio-scroll-screen javap-mode yasnippet-snippets auto-auto-indent java-imports tern-auto-complete tern auto-complete-c-headers js2-mode add-node-modules-path js-auto-format-mode flycheck-pos-tip package-utils ace-isearch yasnippet python-mode neotree jedi golden-ratio company auto-highlight-symbol atom-one-dark-theme))))
+    (skewer-mode multi-web-mode git-auto-commit-mode tern-context-coloring recentf-ext js-auto-beautify company-tabnine vertico selectrum helm-describe-modes org-autolist rustic racer flycheck-rust rust-auto-use rust-mode web-mode-edit-element ac-html ts ob-typescript frontside-javascript auto-virtualenvwrapper virtualenv company-jedi helm-company paren-face counsel swiper-helm swiper auto-complete-exuberant-ctags helm auto-complete-auctex smartparens go-complete go-errcheck dumb-jump company-ctags company-go go-eldoc go-autocomplete go-mode auto-indent-mode irony matlab-mode magit avy-flycheck ace-jump-mode ac-mozc yatex atom-dark-theme fuzzy ## company-c-headers ctags-update jedi-direx mozc rainbow-delimiters company-tern golden-ratio-scroll-screen javap-mode yasnippet-snippets auto-auto-indent java-imports tern-auto-complete tern auto-complete-c-headers js2-mode add-node-modules-path js-auto-format-mode flycheck-pos-tip package-utils ace-isearch yasnippet python-mode neotree jedi golden-ratio company auto-highlight-symbol atom-one-dark-theme))))
